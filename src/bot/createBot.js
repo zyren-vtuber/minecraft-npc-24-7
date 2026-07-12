@@ -3,15 +3,20 @@ const logger = require('../logger');
 const { startAntiAfk } = require('./antiAfk');
 
 function createBot(config, onSpawned, onEnded) {
-  logger.info(`Conectando a ${config.host}:${config.port} como "${config.username}"...`);
+  const target = config.port ? `${config.host}:${config.port}` : `${config.host} (SRV)`;
+  logger.info(`Conectando a ${target} como "${config.username}"...`);
 
-  const bot = mineflayer.createBot({
+  const options = {
     host: config.host,
-    port: config.port,
     username: config.username,
     version: config.version,
     auth: config.auth,
-  });
+  };
+  if (config.port) {
+    options.port = config.port;
+  }
+
+  const bot = mineflayer.createBot(options);
 
   bot.once('spawn', () => {
     logger.info('Bot conectado y en el mundo.');

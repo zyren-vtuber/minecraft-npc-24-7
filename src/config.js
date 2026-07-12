@@ -7,7 +7,9 @@ function int(value, fallback) {
 
 const config = {
   host: process.env.MC_HOST || 'localhost',
-  port: int(process.env.MC_PORT, 25565),
+  // Sin puerto explicito, mineflayer resuelve el registro SRV del host
+  // (asi es como funcionan direcciones tipo "algo.aternos.me").
+  port: process.env.MC_PORT ? int(process.env.MC_PORT, undefined) : undefined,
   username: process.env.MC_USERNAME || 'NPC_Bot',
   version: process.env.MC_VERSION ? process.env.MC_VERSION : false,
   auth: 'offline',
