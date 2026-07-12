@@ -73,12 +73,41 @@
   .ping { color: var(--muted); font-size: 0.85rem; }
   .empty { padding: 1.5rem 1.1rem; color: var(--muted); text-align: center; }
   .updated { color: var(--muted); font-size: 0.75rem; margin-top: 1rem; text-align: right; }
+  .source {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.8rem;
+  }
+  .source input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  .source button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .source button:hover { border-color: var(--green); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Jugadores en el servidor</h1>
   <div class="status"><span class="dot" id="dot"></span><span id="statusText">Conectando al panel...</span></div>
+  <div class="source">
+    <input id="wsInput" type="text" placeholder="wss://tu-tunel.trycloudflare.com">
+    <button id="wsSave">Guardar</button>
+  </div>
   <div class="card" id="list"><div class="empty">Cargando...</div></div>
   <div class="updated" id="updated"></div>
 </div>
@@ -114,15 +143,45 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function connect() {
+const STORAGE_KEY = 'npc247-ws-url';
+
+function resolveTarget() {
+  const params = new URLSearchParams(location.search);
+  const fromParam = params.get('ws');
+  if (fromParam) {
+    localStorage.setItem(STORAGE_KEY, fromParam);
+    return fromParam;
+  }
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) return saved;
+
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}`);
+  return `${proto}://${location.host}`;
+}
+
+let currentSocket = null;
+
+function connect(target) {
+  document.getElementById('wsInput').value = target;
+  if (currentSocket) {
+    currentSocket.onclose = null;
+    currentSocket.close();
+  }
+  const ws = new WebSocket(target);
+  currentSocket = ws;
   ws.onmessage = (event) => render(JSON.parse(event.data));
-  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onclose = () => setTimeout(() => connect(target), 3000);
   ws.onerror = () => ws.close();
 }
 
-connect();
+document.getElementById('wsSave').addEventListener('click', () => {
+  const value = document.getElementById('wsInput').value.trim();
+  if (!value) return;
+  localStorage.setItem(STORAGE_KEY, value);
+  connect(value);
+});
+
+connect(resolveTarget());
 </script>
 </body>
 </html>

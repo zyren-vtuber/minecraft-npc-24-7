@@ -4,7 +4,8 @@
   "description": "Bot que se conecta a un servidor de Minecraft como jugador real 24/7 (fake player / anti-AFK), sin instalar plugins ni mods en el servidor.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "setup:tunnel": "node scripts/download-cloudflared.js"
   },
   "license": "MIT",
   "dependencies": {

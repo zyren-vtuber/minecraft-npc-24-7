@@ -74,9 +74,35 @@ en vivo quién está conectado al servidor — usa la propia visión del bot com
 jugador real (`bot.players`), así que es exacto y se actualiza al instante
 cuando alguien entra o sale, sin refrescar la página.
 
-No tiene autenticación. Es para uso local/personal: si vas a correr el bot en
-una máquina expuesta a internet, no dejes `PANEL_PORT` abierto públicamente
-(usa un firewall o corre el panel solo en `localhost`).
+No tiene autenticación (cualquiera con el link ve nombres y ping de quien está
+conectado — nada sensible, pero ten esto en cuenta).
+
+### Verlo desde https://zyren-vtuber.github.io/minecraft-npc-24-7/
+
+GitHub Pages solo sirve archivos estáticos, no puede correr el servidor
+Node.js ni el WebSocket. Para verlo desde ahí, el bot expone tu panel local a
+internet con un [Cloudflare Tunnel](https://github.com/cloudflare/cloudflared)
+gratuito, y la página estática se conecta a esa URL:
+
+1. Una sola vez: `npm run setup:tunnel` (descarga `cloudflared` a `bin/`, no
+   se sube al repo).
+2. En tu `.env`: `TUNNEL_ENABLED=true`.
+3. `npm start`. En la consola va a aparecer algo como:
+   ```
+   Panel publico: https://algo-random.trycloudflare.com
+   Abre esto para ver el panel: https://zyren-vtuber.github.io/minecraft-npc-24-7/?ws=wss://algo-random.trycloudflare.com
+   ```
+   Abre ese segundo link. La página guarda esa URL en el navegador, así que
+   las próximas veces basta con abrir `https://zyren-vtuber.github.io/minecraft-npc-24-7/`
+   directo — y si el túnel cambia de URL (pasa en cada reinicio, porque es la
+   versión gratuita sin dominio propio), pega la nueva en el campo de arriba
+   del panel y dale "Guardar".
+
+El túnel (y por lo tanto el panel público) solo vive mientras `npm start`
+esté corriendo en algún lado. Si quieres que esto funcione de verdad 24/7 sin
+depender de que tu PC esté prendida, el bot necesita correr en una máquina
+que sí esté siempre encendida (un VPS, por ejemplo) — ahí es donde correrías
+`npm start` con `TUNNEL_ENABLED=true`.
 
 ## Qué NO hace
 

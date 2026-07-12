@@ -2,9 +2,12 @@ const config = require('./config');
 const logger = require('./logger');
 const { createBot } = require('./bot/createBot');
 const { startPanel, updatePanelBot } = require('./panel/panelServer');
+const { startTunnel } = require('./panel/tunnel');
 
 let reconnectDelay = config.reconnectDelayMs;
 let panelStarted = false;
+let tunnelStarted = false;
+let tunnelProcess = null;
 
 function connect() {
   const bot = createBot(config, handleSpawned, handleDisconnect);
@@ -12,6 +15,15 @@ function connect() {
     if (!panelStarted) {
       startPanel(config);
       panelStarted = true;
+    }
+    if (config.tunnelEnabled && !tunnelStarted) {
+      tunnelStarted = true;
+      tunnelProcess = startTunnel(config, (publicUrl) => {
+        const wsUrl = publicUrl.replace('https://', 'wss://');
+        const pagesLink = `${config.pagesUrl}?ws=${encodeURIComponent(wsUrl)}`;
+        logger.info(`Panel publico: ${publicUrl}`);
+        logger.info(`Abre esto para ver el panel: ${pagesLink}`);
+      });
     }
     updatePanelBot(bot);
   }
@@ -29,6 +41,9 @@ function handleDisconnect() {
 
 process.on('SIGINT', () => {
   logger.info('Cerrando bot (SIGINT).');
+  if (tunnelProcess) {
+    tunnelProcess.kill();
+  }
   process.exit(0);
 });
 

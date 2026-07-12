@@ -18,6 +18,8 @@ const config = {
   reconnectMaxDelayMs: int(process.env.RECONNECT_MAX_DELAY_MS, 300000),
   panelEnabled: process.env.PANEL_ENABLED !== 'false',
   panelPort: int(process.env.PANEL_PORT, 3000),
+  tunnelEnabled: process.env.TUNNEL_ENABLED === 'true',
+  pagesUrl: process.env.PAGES_URL || 'https://zyren-vtuber.github.io/minecraft-npc-24-7/',
 };
 
 module.exports = config;
