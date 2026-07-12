@@ -1,0 +1,93 @@
+# minecraft-npc-24-7
+
+Bot que se conecta a un servidor de Minecraft **como un jugador real**, 24/7,
+usando [mineflayer](https://github.com/PrismarineJS/mineflayer). No instala
+nada en el servidor: no es un plugin ni un mod, es un script Node.js externo
+que se conecta por la red igual que lo haría un cliente normal.
+
+Al ser una conexión real, el bot:
+- Ocupa un slot real de jugador.
+- Aparece en la tablist y en `/list`.
+- Cuenta como jugador conectado para cualquier host o monitor que vigile
+  conexiones reales (a diferencia de un plugin que solo falsea el ping).
+
+## Requisitos
+
+- El servidor debe estar en **offline-mode / cracked** (`online-mode=false`
+  en `server.properties`), porque el bot se conecta solo con un username, sin
+  autenticar contra una cuenta Microsoft real.
+- [Node.js](https://nodejs.org/) 18 o superior instalado donde vayas a correr
+  el bot (no en el servidor de Minecraft).
+
+## Instalación
+
+```bash
+git clone git@github.com:zyren-vtuber/minecraft-npc-24-7.git
+cd minecraft-npc-24-7
+npm install
+cp .env.example .env
+```
+
+Edita `.env` con los datos de tu servidor:
+
+```env
+MC_HOST=tu-servidor.example.com
+MC_PORT=25565
+MC_USERNAME=NPC_Bot
+MC_VERSION=
+ANTI_AFK_INTERVAL_MS=30000
+RECONNECT_DELAY_MS=10000
+RECONNECT_MAX_DELAY_MS=300000
+```
+
+- `MC_VERSION` puede dejarse vacío para que mineflayer detecte la versión del
+  servidor automáticamente.
+- `ANTI_AFK_INTERVAL_MS` controla cada cuánto el bot mira alrededor, salta y
+  da un par de pasos, para no quedarse inmóvil (evita kicks por AFK y se ve
+  más natural).
+- `RECONNECT_DELAY_MS` / `RECONNECT_MAX_DELAY_MS` controlan el backoff de
+  reconexión si el bot se cae o lo desconectan.
+
+## Uso
+
+```bash
+npm start
+```
+
+Esto deja el bot corriendo en primer plano, con reconexión automática si se
+cae la conexión. Para que quede corriendo 24/7 de verdad, usa un gestor de
+procesos, por ejemplo [pm2](https://pm2.keymetrics.io/):
+
+```bash
+npm install -g pm2
+pm2 start src/index.js --name npc247
+pm2 save
+```
+
+## Qué NO hace
+
+- No evade baneos ni sistemas anti-bot/anti-cheat del servidor: si el
+  servidor detecta y banea bots, este seguirá siendo detectable como
+  cualquier bot simple (no imita comportamiento humano complejo, solo
+  movimiento básico anti-AFK).
+- No funciona contra servidores en online-mode sin credenciales reales de una
+  cuenta Microsoft — eso está fuera del alcance de este proyecto.
+- No garantiza que un hosting gratuito no apague la máquina completa por
+  otras razones (uso de CPU/RAM, límites de horas, etc.), solo mantiene una
+  conexión de jugador real activa.
+
+## Estructura
+
+```
+src/
+  index.js          # entrada: conecta y gestiona reconexión con backoff
+  config.js          # lee .env
+  logger.js          # logs con timestamp
+  bot/
+    createBot.js      # crea el bot de mineflayer y sus listeners
+    antiAfk.js         # movimiento periódico para evitar AFK-kick
+```
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE).
