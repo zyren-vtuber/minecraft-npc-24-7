@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>NPC 24/7 - Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    color-scheme: dark light;
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #262b36;
+    --text: #e7e9ee;
+    --muted: #8b93a7;
+    --green: #3ddc84;
+    --red: #ff5c5c;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --border: #dfe3ea;
+      --text: #1a1d23;
+      --muted: #5b6472;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 2rem 1rem;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--red);
+  }
+  .dot.on { background: var(--green); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .row:last-child { border-bottom: none; }
+  .name { font-weight: 600; }
+  .badge {
+    font-size: 0.7rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    margin-left: 0.5rem;
+  }
+  .ping { color: var(--muted); font-size: 0.85rem; }
+  .empty { padding: 1.5rem 1.1rem; color: var(--muted); text-align: center; }
+  .updated { color: var(--muted); font-size: 0.75rem; margin-top: 1rem; text-align: right; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Jugadores en el servidor</h1>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">Conectando al panel...</span></div>
+  <div class="card" id="list"><div class="empty">Cargando...</div></div>
+  <div class="updated" id="updated"></div>
+</div>
+<script>
+function render(data) {
+  const dot = document.getElementById('dot');
+  const statusText = document.getElementById('statusText');
+  const list = document.getElementById('list');
+  const updated = document.getElementById('updated');
+
+  dot.classList.toggle('on', data.connected);
+  statusText.textContent = data.connected
+    ? `Bot "${data.botUsername}" conectado`
+    : 'Bot desconectado del servidor';
+
+  if (!data.players || data.players.length === 0) {
+    list.innerHTML = '<div class="empty">Nadie conectado ahora mismo.</div>';
+  } else {
+    list.innerHTML = data.players.map((p) => `
+      <div class="row">
+        <span class="name">${escapeHtml(p.username)}${p.isBot ? '<span class="badge">NPC</span>' : ''}</span>
+        <span class="ping">${p.ping !== null ? p.ping + ' ms' : ''}</span>
+      </div>
+    `).join('');
+  }
+
+  updated.textContent = 'Actualizado: ' + new Date(data.updatedAt).toLocaleTimeString();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}`);
+  ws.onmessage = (event) => render(JSON.parse(event.data));
+  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onerror = () => ws.close();
+}
+
+connect();
+</script>
+</body>
+</html>

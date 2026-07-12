@@ -38,6 +38,8 @@ MC_VERSION=
 ANTI_AFK_INTERVAL_MS=30000
 RECONNECT_DELAY_MS=10000
 RECONNECT_MAX_DELAY_MS=300000
+PANEL_ENABLED=true
+PANEL_PORT=3000
 ```
 
 - `MC_VERSION` puede dejarse vacío para que mineflayer detecte la versión del
@@ -64,6 +66,18 @@ pm2 start src/index.js --name npc247
 pm2 save
 ```
 
+## Panel en tiempo real
+
+Con `PANEL_ENABLED=true` (por defecto) el bot levanta una página web local en
+`http://localhost:3000` (o el puerto que pongas en `PANEL_PORT`) que muestra
+en vivo quién está conectado al servidor — usa la propia visión del bot como
+jugador real (`bot.players`), así que es exacto y se actualiza al instante
+cuando alguien entra o sale, sin refrescar la página.
+
+No tiene autenticación. Es para uso local/personal: si vas a correr el bot en
+una máquina expuesta a internet, no dejes `PANEL_PORT` abierto públicamente
+(usa un firewall o corre el panel solo en `localhost`).
+
 ## Qué NO hace
 
 - No evade baneos ni sistemas anti-bot/anti-cheat del servidor: si el
@@ -86,6 +100,9 @@ src/
   bot/
     createBot.js      # crea el bot de mineflayer y sus listeners
     antiAfk.js         # movimiento periódico para evitar AFK-kick
+  panel/
+    panelServer.js     # servidor HTTP + WebSocket del panel
+    public/index.html   # pagina del panel
 ```
 
 ## Licencia

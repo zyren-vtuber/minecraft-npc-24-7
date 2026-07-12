@@ -1,11 +1,20 @@
 const config = require('./config');
 const logger = require('./logger');
 const { createBot } = require('./bot/createBot');
+const { startPanel, updatePanelBot } = require('./panel/panelServer');
 
 let reconnectDelay = config.reconnectDelayMs;
+let panelStarted = false;
 
 function connect() {
-  createBot(config, handleSpawned, handleDisconnect);
+  const bot = createBot(config, handleSpawned, handleDisconnect);
+  if (config.panelEnabled) {
+    if (!panelStarted) {
+      startPanel(config);
+      panelStarted = true;
+    }
+    updatePanelBot(bot);
+  }
 }
 
 function handleSpawned() {

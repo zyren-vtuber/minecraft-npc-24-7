@@ -9,6 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "mineflayer": "^4.23.0"
+    "mineflayer": "^4.23.0",
+    "ws": "^8.18.0"
   }
 }

@@ -16,6 +16,8 @@ const config = {
   antiAfkIntervalMs: int(process.env.ANTI_AFK_INTERVAL_MS, 30000),
   reconnectDelayMs: int(process.env.RECONNECT_DELAY_MS, 10000),
   reconnectMaxDelayMs: int(process.env.RECONNECT_MAX_DELAY_MS, 300000),
+  panelEnabled: process.env.PANEL_ENABLED !== 'false',
+  panelPort: int(process.env.PANEL_PORT, 3000),
 };
 
 module.exports = config;
